@@ -62,8 +62,8 @@ df.dropna(subset=taste_columns + beer_columns, inplace=True)
 
 preference_map = {
     "Gosto": 1,
-    "Não gosto": -1,
-    "Indiferente": 0,
+    "Não gosto": 0,
+    "Indiferente": 0.5,
     "Desconheço": np.nan
 }
 

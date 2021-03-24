@@ -26,8 +26,11 @@ def main():
     }
 
     st.sidebar.title("TeraBeer Recommendations :beer:")
-    st.sidebar.text("Recomendações de cerveja artesanal baseadas no seu paladar e uso de IA.")
-    page = st.sidebar.selectbox("Selecione uma opção", tuple(pages.keys()))
+    st.sidebar.markdown("Recomendações de cerveja artesanal brasileiras baseadas no seu paladar e com uso de IA.")
+    page = st.sidebar.selectbox(
+        "Preencha a pesquisa e veja as cervejas recomendadas na aba Sugestões",
+        tuple(pages.keys())
+    )
 
     # Display the selected page with the session state
     pages[page](state)
@@ -45,12 +48,19 @@ def display_pesquisa(state):
     )
   
     st.title(':pencil: Pesquisa')
-    st.text('Responda as perguntas a seguir a respeito do seu paladar e preferências de cerveja.')
+    st.markdown('Responda as perguntas a seguir a respeito do seu paladar e preferências de cerveja.')
 
     options = ['', 'Gosto', 'Não gosto', 'Indiferente', 'Desconheço']
 
-    st.subheader('Qual a sua opinião sobre os alimentos abaixo?')
-    st.text('Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".')
+    st.text("")
+    st.markdown(
+        '''
+        ### Parte 1: Qual a sua opinião sobre os alimentos abaixo?
+        
+        Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".
+        '''
+    )
+    # st.text('Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".')
 
     taste_questions = {  # Key must match column names used in training, value is displayed in forms
         'Alimento Chocolate amargo': 'Chocolate 70% cacau',
@@ -78,8 +88,9 @@ def display_pesquisa(state):
     feat_paladar = {}
     for feature_name, question in taste_questions.items():
         feat_paladar[feature_name] = st.radio(question, options, index=1)
+        st.text("")
 
-    st.subheader('Qual a sua opinião sobre os seguintes estilos de cerveja?')
+    st.markdown('### Parte 2: Qual a sua opinião sobre os seguintes estilos de cerveja?')
 
     beer_questions = {
         'Cerveja Pilsen': 'Pilsen/Lager',
@@ -99,6 +110,7 @@ def display_pesquisa(state):
 
     for feature_name, question in beer_questions.items():
         feat_paladar[feature_name] = st.radio(question, options, index=4)
+        st.text("")
 
     exclude_known = st.checkbox('Desejo receber recomendações somente de estilos que eu não conheço', True)
 
@@ -176,10 +188,13 @@ def display_sugestoes(state):
 
             style_markdown = f"""
             <div>
-                <h2> Estilo {style_rank}: {style_name} ({style_score:.1%} recomendado para você)</h2>
+                <br>
+                <h2> Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)</h2>
+                <br>
                 <p>
                     {style_description}
                 </p>
+                <br>
             </div>
             """
             st.markdown(style_markdown, unsafe_allow_html=True)

@@ -1,1 +1,2 @@
-web: sh setup.sh && export EMAIL_FROM="$EMAIL_FROM" && export EMAIL_PASSWORD="$EMAIL_PASSWORD" && streamlit run app.py
+release: export EMAIL_FROM="$EMAIL_FROM"; export EMAIL_PASSWORD="$EMAIL_PASSWORD"
+web: sh setup.sh && streamlit run app.py

@@ -16,7 +16,25 @@ conda activate ENVIRONMENT_NAME
 pip install -r requirements.txt
 ```
 
-#### Execução local
+Será necessário configurar as seguintes variáveis de ambiente:
+```
+export FROM_EMAIL=[EMAIL]
+export EMAIL_PASSWORD=[PASSWORD]
+```
+
+### Recriação do modelo
+
+Para adicionar contemplar mais respostas no sistema de recomendação, 
+substitua o arquivo `raw_dataset.xlsx` na pasta `data` e execute os scripts
+
+```
+python data/build_dataset.py
+python model/create_recommender.py
+```
+
+O sistema de recomendação será salvo em 4 arquivos na pasta `model/recommending_system`.
+
+### Execução local
 
 Para executar a aplicação streamlit em servidor local, utilize o comando
 

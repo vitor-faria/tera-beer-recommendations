@@ -1,7 +1,8 @@
+import base64
 from data.build_dataset import preference_map
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.mime.image import MIMEImage
 from model.create_recommender import get_beer_columns, melt_user_item_matrix
 from os import environ as env
 import pandas as pd
@@ -43,7 +44,7 @@ def display_pesquisa(state):
     
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.markdown(
-        """ <style>div[role="radiogroup"] >  :first-child{display: none !important;}</style>""",
+        '<style>div[role="radiogroup"] >  :first-child{display: none !important;}</style>',
         unsafe_allow_html=True
     )
   
@@ -60,7 +61,6 @@ def display_pesquisa(state):
         Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".
         '''
     )
-    # st.text('Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".')
 
     taste_questions = {  # Key must match column names used in training, value is displayed in forms
         'Alimento Chocolate amargo': 'Chocolate 70% cacau',
@@ -148,8 +148,8 @@ def display_sugestoes(state):
 
     recommendations, df_paladar = state.recommendations, state.paladar
 
-    st.dataframe(df_paladar)
-    st.dataframe(recommendations)
+    # st.dataframe(df_paladar)
+    # st.dataframe(recommendations)
 
     rename_beer_styles = {
         'Cerveja Blonde': 'Blonde Ale',
@@ -171,13 +171,14 @@ def display_sugestoes(state):
     df_cervejas = get_beer_list()
     recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='estilo')
     recommended_labels.sort_values(by=['score', 'media'], ascending=[False, False])
-    st.dataframe(recommended_labels)
+    # st.dataframe(recommended_labels)
 
     df_style_1 = recommended_labels[recommended_labels['rank'] == 1]
     df_style_2 = recommended_labels[recommended_labels['rank'] == 2]
     df_style_3 = recommended_labels[recommended_labels['rank'] == 3]
 
     markdown_list = []
+    image_list = []
     for df_style in [df_style_1, df_style_2, df_style_3]:
         if not df_style.empty:
             df_style.reset_index(drop=True, inplace=True)
@@ -189,7 +190,9 @@ def display_sugestoes(state):
             style_markdown = f"""
             <div>
                 <br>
-                <h2> Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)</h2>
+                <h2> 
+                    Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)
+                </h2>
                 <br>
                 <p>
                     {style_description}
@@ -213,24 +216,34 @@ def display_sugestoes(state):
 
                 with column1:
                     try:
-                        st.image(
-                            f'fig/{figure}',
-                            # width=200,
-                            use_column_width=True
+                        st.image(f'fig/{figure}', use_column_width=True)
+                        image_list.append(f'fig/{figure}')
+                        markdown_list.append(
+                            f"""
+                            <br>
+                            <div>
+                                <img 
+                                    src="cid:image{len(image_list)}" 
+                                    alt="Logo" 
+                                    style="width:200px;height:200px;">
+                            </div>
+                            """
                         )
-                        markdown_list.append(f"""
-                        <div>
-                            <img src="/fig/{figure}" alt="Rótulo" style="width:200px;">
-                        </div>
-                        """)
 
                     except FileNotFoundError:
                         st.image('fig/placeholder-image.jpg', use_column_width=True)
-                        markdown_list.append("""
-                        <div>
-                            <img src="/fig/placeholder-image.jpg" alt="Rótulo" style="width:200px;">
-                        </div>
-                        """)
+                        image_list.append('fig/placeholder-image.jpg')
+                        markdown_list.append(
+                            f"""
+                            <br>
+                            <div>
+                                <img 
+                                    src="cid:image{len(image_list)}" 
+                                    alt="Logo" 
+                                    style="width:200px;height:200px;">
+                            </div>
+                            """
+                        )
 
                 with column2:
                     beer_markdown = f"""
@@ -259,7 +272,7 @@ def display_sugestoes(state):
 
         if st.button('Enviar recomendações por email'):
             #  TODO: send all collected data to database
-            enviar_email(email, markdown_list)
+            send_mail(email, markdown_list, image_list)
             st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
 
 
@@ -339,7 +352,12 @@ def _get_state(hash_funcs=None):
     return session._custom_session_state
 
 
-def enviar_email(to_email, markdown_list):
+def get_base64_encoded_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
+
+
+def send_mail(to_email, markdown_list, image_list):
     # Define the source and target email address.
     str_from = env["EMAIL_FROM"]
     sender_pass = env["EMAIL_PASSWORD"]
@@ -351,21 +369,20 @@ def enviar_email(to_email, markdown_list):
     message['From'] = str_from
     message['To'] = str_to
 
-    content = ' '.join(markdown_list)
-    # html_content = markdown.markdown(content)
+    content = '<br> '.join(markdown_list)
     message_html = f"""
     <b>Esta é a sua recomendação</b>:<br>
     <div> {content} </div>
     """
     msg_text = MIMEText(message_html, 'html')
-    # Attach the above html content MIMEText object to the menssage object.
     message.attach(msg_text)
-    # fp = open('D:/Downloads/screenshot/sugestao.png', 'rb')
-    # msg_image = MIMEImage(fp.read())
-    # fp.close()
 
-    # msg_image.add_header('Content-ID', '<image1>')
-    # message.attach(msg_image)
+    for image_index, image_filename in enumerate(image_list):
+        with open(image_filename, 'rb') as fp:
+            msg_image = MIMEImage(fp.read())
+            fp.close()
+        msg_image.add_header('Content-ID', f'<image{image_index + 1}>')
+        message.attach(msg_image)
 
     # Create an smtplib.SMTP object to send the email.
     smtp = smtplib.SMTP('smtp.gmail.com', 587)

@@ -20,6 +20,7 @@ Será necessário configurar as seguintes variáveis de ambiente:
 ```
 export FROM_EMAIL=[EMAIL]
 export EMAIL_PASSWORD=[PASSWORD]
+export DB_URL=[DB_URL]
 ```
 
 ### Recriação do modelo

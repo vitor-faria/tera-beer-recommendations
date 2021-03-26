@@ -1,12 +1,8 @@
-import base64
 from data.build_dataset import preference_map
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from functions.db_functions import send_answers_to_db
+from functions.email_functions import send_mail
 from model.create_recommender import get_beer_columns, melt_user_item_matrix
-from os import environ as env
 import pandas as pd
-import smtplib
 import streamlit as st
 from streamlit.hashing import _CodeHasher
 from streamlit.report_thread import get_report_ctx
@@ -40,14 +36,19 @@ def main():
     state.sync()
 
 
+@st.cache
+def get_beer_list():
+    return pd.read_csv('data/beer_list.csv', sep=';')
+
+
 def display_pesquisa(state):
-    
+
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.markdown(
         '<style>div[role="radiogroup"] >  :first-child{display: none !important;}</style>',
         unsafe_allow_html=True
     )
-  
+
     st.title(':pencil: Pesquisa')
     st.markdown('Responda as perguntas a seguir a respeito do seu paladar e preferências de cerveja.')
 
@@ -57,7 +58,7 @@ def display_pesquisa(state):
     st.markdown(
         '''
         ### Parte 1: Qual a sua opinião sobre os alimentos abaixo?
-        
+
         Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".
         '''
     )
@@ -117,7 +118,7 @@ def display_pesquisa(state):
     df_paladar = pd.DataFrame([feat_paladar], index=[-1])
     df_paladar.replace(preference_map, inplace=True)
     new_observation_data = melt_user_item_matrix(df_paladar)
-    st.dataframe(new_observation_data)
+    # st.dataframe(new_observation_data)
     recommendable_beers = get_beer_columns(df_paladar)
     recommendable_beers.remove('Cerveja Pilsen')
 
@@ -132,18 +133,13 @@ def display_pesquisa(state):
         ).to_dataframe()
 
         st.dataframe(recommendations)
-        st.success('Pronto! Confira a página Sugestões')
+        st.success('Pronto! Confira a página Sugestões do menu à esquerda')
         sleep(3)
         state.recommendations, state.paladar = recommendations, df_paladar
 
 
-@st.cache
-def get_beer_list():
-    return pd.read_csv('data/beer_list.csv', sep=';')
-
-
 def display_sugestoes(state):
-    
+
     st.title(':beer: Sugestões')
 
     recommendations, df_paladar = state.recommendations, state.paladar
@@ -190,7 +186,7 @@ def display_sugestoes(state):
             style_markdown = f"""
             <div>
                 <br>
-                <h2> 
+                <h2>
                     Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)
                 </h2>
                 <br>
@@ -222,9 +218,9 @@ def display_sugestoes(state):
                             f"""
                             <br>
                             <div>
-                                <img 
-                                    src="cid:image{len(image_list)}" 
-                                    alt="Logo" 
+                                <img
+                                    src="cid:image{len(image_list)}"
+                                    alt="Logo"
                                     style="width:200px;height:200px;">
                             </div>
                             """
@@ -237,9 +233,9 @@ def display_sugestoes(state):
                             f"""
                             <br>
                             <div>
-                                <img 
-                                    src="cid:image{len(image_list)}" 
-                                    alt="Logo" 
+                                <img
+                                    src="cid:image{len(image_list)}"
+                                    alt="Logo"
                                     style="width:200px;height:200px;">
                             </div>
                             """
@@ -265,15 +261,23 @@ def display_sugestoes(state):
             'Aceito receber por e-mail ofertas especiais de cervejas com base nas minhas respostas',
             True
         )
-        accept_data_usage = st.checkbox(
+        allow_data_usage = st.checkbox(
             'Permito que utilizem minhas respostas para melhorar recomendações futuras',
             True
         )
 
         if st.button('Enviar recomendações por email'):
-            #  TODO: send all collected data to database
             send_mail(email, markdown_list, image_list)
             st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
+
+            if accept_beer_offers or allow_data_usage:
+                send_answers_to_db(
+                    email=email,
+                    recommendations=recommendations,
+                    df_paladar=df_paladar,
+                    accept_beer_offers=accept_beer_offers,
+                    allow_data_usage=allow_data_usage,
+                )
 
 
 class _SessionState:
@@ -297,7 +301,7 @@ class _SessionState:
     def __getitem__(self, item):
         """Return a saved state value, None if item is undefined."""
         return self._state["data"].get(item, None)
-        
+
     def __getattr__(self, item):
         """Return a saved state value, None if item is undefined."""
         return self._state["data"].get(item, None)
@@ -309,12 +313,12 @@ class _SessionState:
     def __setattr__(self, item, value):
         """Set state value."""
         self._state["data"][item] = value
-    
+
     def clear(self):
         """Clear session state and request a rerun."""
         self._state["data"].clear()
         self._state["session"].request_rerun()
-    
+
     def sync(self):
         """Rerun the app with all state values up to date from the beginning to fix rollbacks."""
 
@@ -324,7 +328,7 @@ class _SessionState:
         # Example: state.value += 1
         if self._state["is_rerun"]:
             self._state["is_rerun"] = False
-        
+
         elif self._state["hash"] is not None:
             if self._state["hash"] != self._state["hasher"].to_bytes(self._state["data"], None):
                 self._state["is_rerun"] = True
@@ -339,7 +343,7 @@ def _get_session():
 
     if session_info is None:
         raise RuntimeError("Couldn't get your Streamlit Session object.")
-    
+
     return session_info.session
 
 
@@ -350,46 +354,6 @@ def _get_state(hash_funcs=None):
         session._custom_session_state = _SessionState(session, hash_funcs)
 
     return session._custom_session_state
-
-
-def get_base64_encoded_image(image_path):
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode('utf-8')
-
-
-def send_mail(to_email, markdown_list, image_list):
-    # Define the source and target email address.
-    str_from = env["EMAIL_FROM"]
-    sender_pass = env["EMAIL_PASSWORD"]
-    str_to = to_email
-
-    # Create an instance of MIMEMultipart object, pass 'related' as the constructor parameter.
-    message = MIMEMultipart('related')
-    message['Subject'] = 'Sua recomendação TeraBeer'
-    message['From'] = str_from
-    message['To'] = str_to
-
-    content = '<br> '.join(markdown_list)
-    message_html = f"""
-    <b>Esta é a sua recomendação</b>:<br>
-    <div> {content} </div>
-    """
-    msg_text = MIMEText(message_html, 'html')
-    message.attach(msg_text)
-
-    for image_index, image_filename in enumerate(image_list):
-        with open(image_filename, 'rb') as fp:
-            msg_image = MIMEImage(fp.read())
-            fp.close()
-        msg_image.add_header('Content-ID', f'<image{image_index + 1}>')
-        message.attach(msg_image)
-
-    # Create an smtplib.SMTP object to send the email.
-    smtp = smtplib.SMTP('smtp.gmail.com', 587)
-    smtp.starttls()  # enable security
-    smtp.login(str_from, sender_pass)
-    smtp.sendmail(str_from, str_to, message.as_string())
-    smtp.quit()
 
 
 if __name__ == "__main__":

@@ -38,7 +38,6 @@ def _build_record_df(email, recommendations, df_paladar, accept_beer_offers, all
 
     recommendations.drop(columns=['index'], inplace=True)
     recommendations_dict = recommendations.astype({'score': float, "rank": int}).to_dict('records')
-    print(recommendations_dict)
 
     df = pd.DataFrame({
         "email": [email],
@@ -51,6 +50,5 @@ def _build_record_df(email, recommendations, df_paladar, accept_beer_offers, all
         "created_at": ["NOW()"],
         "updated_at": ["NOW()"]
     })
-    print(df)
 
     return df

@@ -1,0 +1,15 @@
+SELECT
+    name,
+    brand,
+    terabeer_style,
+    abv,
+    ibu,
+    ratings_count,
+    ratings_avg,
+    style_description,
+    figure,
+    ratings_source,
+    ratings_url,
+    origin_state
+FROM
+    beer_list

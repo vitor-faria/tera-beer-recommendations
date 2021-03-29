@@ -1,5 +1,5 @@
 from data.build_dataset import preference_map
-from functions.db_functions import send_answers_to_db
+from data.db_functions import send_answers_to_db, get_df_from_query
 from functions.email_functions import send_mail
 from model.create_recommender import get_beer_columns, melt_user_item_matrix
 import pandas as pd
@@ -38,7 +38,7 @@ def main():
 
 @st.cache
 def get_beer_list():
-    return pd.read_csv('data/beer_list.csv', sep=';')
+    return get_df_from_query('beer_list')
 
 
 def display_pesquisa(state):
@@ -149,13 +149,13 @@ def display_sugestoes(state):
 
     rename_beer_styles = {
         'Cerveja Blonde': 'Blonde Ale',
-        'Cerveja Trigo': 'Trigo - Weissbier',
+        'Cerveja Trigo': 'Weiss (Trigo)',
         'Cerveja APA': 'American Pale Ale',
         'Cerveja IPA': 'India Pale Ale',
         'Cerveja Session IPA': 'Session IPA',
         'Cerveja NEIPA': 'New England IPA',
         'Cerveja Porter': 'Porter/Stout',
-        'Cerveja Malzbier': 'Malzbier',
+        'Cerveja Malzbier': 'Dunkel/Malzbier',
         'Cerveja Witbier': 'Witbier',
         'Cerveja Sour': 'Sour/Fruit',
         'Cerveja RIS': 'Russian Imperial Stout',
@@ -165,8 +165,8 @@ def display_sugestoes(state):
     recommendations.replace({'product': rename_beer_styles}, inplace=True)
 
     df_cervejas = get_beer_list()
-    recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='estilo')
-    recommended_labels.sort_values(by=['score', 'media'], ascending=[False, False])
+    recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='terabeer_style')
+    recommended_labels.sort_values(by=['score', 'ratings_avg'], ascending=[False, False])
     # st.dataframe(recommended_labels)
 
     df_style_1 = recommended_labels[recommended_labels['rank'] == 1]
@@ -178,10 +178,10 @@ def display_sugestoes(state):
     for df_style in [df_style_1, df_style_2, df_style_3]:
         if not df_style.empty:
             df_style.reset_index(drop=True, inplace=True)
-            style_name = df_style['estilo'][0]
+            style_name = df_style['terabeer_style'][0]
             style_rank = df_style['rank'][0]
             style_score = df_style['score'][0]
-            style_description = df_style['descricao'][0]
+            style_description = df_style['style_description'][0]
 
             style_markdown = f"""
             <div>
@@ -200,13 +200,16 @@ def display_sugestoes(state):
             markdown_list.append(style_markdown)
 
             for index, row in df_style.iterrows():
-                beer = row['cerveja']
-                brewery = row['cervejaria']
+                beer = row['name']
+                brewery = row['brand']
                 abv = row['abv']
                 ibu = row['ibu']
-                avg_rating = row['media']
-                count_ratings = int(row['ratings'])
-                figure = row['figura ']
+                avg_rating = row['ratings_avg']
+                count_ratings = int(row['ratings_count'])
+                figure = row['figure']
+                ratings_source = row['ratings_source']
+                ratings_url = row['ratings_url']
+                origin_state = row['origin_state']
 
                 column1, column2 = st.beta_columns((1, 4))
 
@@ -242,13 +245,16 @@ def display_sugestoes(state):
                         )
 
                 with column2:
+                    ratings_source_url = f'<a href="{ratings_url}">{ratings_source}</a>'
+                    ibu_line = f'{int(ibu)} unidades de amargor' if ibu > 0 else 'Indisponível'
                     beer_markdown = f"""
                     <div>
                         <h3>{beer} - {brewery}</h3>
                         <p>
-                            <b>Nota média</b>: {avg_rating:.3} ({count_ratings} avaliações) <br>
+                            <b>Origem</b>: {origin_state}<br>
+                            <b>Nota média</b>: {avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})<br>
                             <b>ABV</b>: {abv}% álcool <br>
-                            <b>IBU</b>: {ibu} unidades de amargor
+                            <b>IBU</b>: {ibu_line}
                         </p>
                     </div>
                     """

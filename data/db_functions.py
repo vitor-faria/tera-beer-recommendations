@@ -3,9 +3,24 @@ import sqlalchemy
 from os import environ as env
 
 
-def send_answers_to_db(email, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
+def connect_to_db():
     db_url = env["DB_URL"]
     engine = sqlalchemy.create_engine(db_url)
+
+    return engine
+
+
+def get_df_from_query(query_name):
+    engine = connect_to_db()
+    with open(f'data/queries/{query_name}.sql', 'r') as file:
+        query_statement = file.read()
+    df = pd.read_sql(query_statement, engine)
+
+    return df
+
+
+def send_answers_to_db(email, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
+    engine = connect_to_db()
     df = _build_record_df(email, recommendations, df_paladar, accept_beer_offers, allow_data_usage)
     df.to_sql(
         name='user_recommendations',

@@ -10,6 +10,13 @@ SELECT
     figure,
     ratings_source,
     ratings_url,
-    origin_state
+    COALESCE(origin_state, '???') AS origin_state,
+    offer_url
 FROM
     beer_list
+WHERE
+    offer_url IS NOT NULL
+    AND ratings_count > 0
+    AND ratings_avg > 0
+    AND ratings_url IS NOT NULL
+    AND ratings_source IS NOT NULL

@@ -210,6 +210,7 @@ def display_sugestoes(state):
                 ratings_source = row['ratings_source']
                 ratings_url = row['ratings_url']
                 origin_state = row['origin_state']
+                offer_url = row['offer_url']
 
                 column1, column2 = st.beta_columns((1, 4))
 
@@ -245,16 +246,19 @@ def display_sugestoes(state):
                         )
 
                 with column2:
-                    ratings_source_url = f'<a href="{ratings_url}">{ratings_source}</a>'
+                    ratings_source_url = f'<a href="{ratings_url}" target="_blank">{ratings_source}</a>'
+                    ratings_line = f'{avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})'
                     ibu_line = f'{int(ibu)} unidades de amargor' if ibu > 0 else 'Indisponível'
+                    offer_line = f'<b><a href="{offer_url}" target="_blank">Quero!</a></b>'
                     beer_markdown = f"""
                     <div>
                         <h3>{beer} - {brewery}</h3>
                         <p>
                             <b>Origem</b>: {origin_state}<br>
-                            <b>Nota média</b>: {avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})<br>
+                            <b>Nota média</b>: {ratings_line}<br>
                             <b>ABV</b>: {abv}% álcool <br>
-                            <b>IBU</b>: {ibu_line}
+                            <b>IBU</b>: {ibu_line} <br>
+                            {offer_line}
                         </p>
                     </div>
                     """

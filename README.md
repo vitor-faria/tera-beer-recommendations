@@ -45,4 +45,4 @@ streamlit run app.py
 
 ## URL da Aplicação
 
-Produção: [TODO]
+Produção: https://tera-beer-recommendations.herokuapp.com/

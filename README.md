@@ -46,7 +46,7 @@ streamlit run app.py
 
 ## URL da Aplicação
 
-Produção: https://tera-beer-recommendations.herokuapp.com/
+Produção: https://terabeer-recomendacoes.herokuapp.com/
 
 A aplicação possui os arquivos `setup.sh` e `Procfile` para facilitar o deploy de uma branch no Heroku pela GUI.
 

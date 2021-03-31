@@ -124,25 +124,34 @@ def display_pesquisa(state):
     }
     df_paladar = pd.DataFrame([feat_paladar], index=[-1])
     df_paladar.replace(preference_map, inplace=True)
-    new_observation_data = melt_user_item_matrix(df_paladar)
+    melt_df = melt_user_item_matrix(df_paladar)
+    new_observation_data = melt_df
     # st.dataframe(new_observation_data)
     recommendable_beers = get_beer_columns(df_paladar)
     recommendable_beers.remove('Cerveja Pilsen')
+    if not exclude_known:  # Exclude beers user already don't like
+        dislike_beers = melt_df[melt_df['rating'] < 1]['product'].to_list()
+        for dislike_beer in dislike_beers:
+            if dislike_beer in recommendable_beers:
+                recommendable_beers.remove(dislike_beer)
 
     if st.button('Gerar recomendações'):
         model = load_model('data/recommending_system')
-        recommendations = model.recommend(
-            users=[-1],
-            k=3,
-            items=recommendable_beers,
-            new_observation_data=SFrame(new_observation_data),
-            exclude_known=exclude_known,
-        ).to_dataframe()
+        if len(recommendable_beers) == 0:
+            st.error('Não temos nenhuma cerveja para te recomendar :/')
+        else:
+            recommendations = model.recommend(
+                users=[-1],
+                k=3,
+                items=recommendable_beers,
+                new_observation_data=SFrame(new_observation_data),
+                exclude_known=exclude_known,
+            ).to_dataframe()
 
-        st.dataframe(recommendations)
-        st.success('Pronto! Confira a página Sugestões do menu à esquerda')
-        sleep(3)
-        state.recommendations, state.paladar = recommendations, df_paladar
+            st.dataframe(recommendations)
+            st.success('Pronto! Confira a página Sugestões do menu à esquerda')
+            sleep(3)
+            state.recommendations, state.paladar = recommendations, df_paladar
 
 
 def display_sugestoes(state):

@@ -23,17 +23,18 @@ export EMAIL_PASSWORD=[PASSWORD]
 export DB_URL=[DB_URL]
 ```
 
+> Importante: para uso de contas do Gmail para o envio de e-mails, é necessário autorizar 
+> o uso de apps menos seguros nas configurações da Conta Google.
+
 ### Recriação do modelo
 
-Para adicionar contemplar mais respostas no sistema de recomendação, 
-substitua o arquivo `raw_dataset.xlsx` na pasta `data` e execute os scripts
+Para recriar o sistema de recomendação, execute o script
 
 ```
-python data/build_dataset.py
-python model/create_recommender.py
+python data/create_recommender.py
 ```
 
-O sistema de recomendação será salvo em 4 arquivos na pasta `model/recommending_system`.
+O sistema de recomendação será salvo em 4 arquivos na pasta `data/recommending_system`.
 
 ### Execução local
 
@@ -46,3 +47,8 @@ streamlit run app.py
 ## URL da Aplicação
 
 Produção: https://tera-beer-recommendations.herokuapp.com/
+
+A aplicação possui os arquivos `setup.sh` e `Procfile` para facilitar o deploy de uma branch no Heroku pela GUI.
+
+> Importante: para que a aplicação funcione adequadamente em produção, as mesmas variáveis de ambiente 
+> precisam ser configuradas.

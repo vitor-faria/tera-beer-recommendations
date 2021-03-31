@@ -1,7 +1,7 @@
-from data.build_dataset import preference_map
-from data.db_functions import send_answers_to_db, get_df_from_query
+from data.db_functions import DBFunctions
 from functions.email_functions import send_mail
-from model.create_recommender import get_beer_columns, melt_user_item_matrix
+from data.create_recommender import get_beer_columns, melt_user_item_matrix
+import numpy as np
 import pandas as pd
 import streamlit as st
 from streamlit.hashing import _CodeHasher
@@ -38,7 +38,8 @@ def main():
 
 @st.cache
 def get_beer_list():
-    return get_df_from_query('beer_list')
+    db = DBFunctions()
+    return db.get_df_from_query('beer_list')
 
 
 def display_pesquisa(state):
@@ -115,6 +116,12 @@ def display_pesquisa(state):
 
     exclude_known = st.checkbox('Desejo receber recomendações somente de estilos que eu não conheço', True)
 
+    preference_map = {
+        "Gosto": 1,
+        "Não gosto": 0,
+        "Indiferente": 0.5,
+        "Desconheço": np.nan
+    }
     df_paladar = pd.DataFrame([feat_paladar], index=[-1])
     df_paladar.replace(preference_map, inplace=True)
     new_observation_data = melt_user_item_matrix(df_paladar)
@@ -123,7 +130,7 @@ def display_pesquisa(state):
     recommendable_beers.remove('Cerveja Pilsen')
 
     if st.button('Gerar recomendações'):
-        model = load_model('model/recommending_system')
+        model = load_model('data/recommending_system')
         recommendations = model.recommend(
             users=[-1],
             k=3,
@@ -141,6 +148,10 @@ def display_pesquisa(state):
 def display_sugestoes(state):
 
     st.title(':beer: Sugestões')
+    st.markdown('''
+    Essas são as cervejas artesanais brasileiras **mais recomendadas para você**. 
+    Ao final você poderá enviar a lista de cervejas para o seu e-mail.
+    ''')
 
     recommendations, df_paladar = state.recommendations, state.paladar
 
@@ -281,7 +292,8 @@ def display_sugestoes(state):
             st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
 
             if accept_beer_offers or allow_data_usage:
-                send_answers_to_db(
+                db = DBFunctions()
+                db.send_answers_to_db(
                     email=email,
                     recommendations=recommendations,
                     df_paladar=df_paladar,

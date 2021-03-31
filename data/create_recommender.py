@@ -1,9 +1,14 @@
+from data.db_functions import DBFunctions
 import pandas as pd
 from turicreate import SFrame, item_similarity_recommender
 
 
 def get_dataset():
-    return pd.read_csv('data/dataset.csv')
+    db = DBFunctions()
+    raw_df = db.get_df_from_query('build_dataset')
+    df = pd.json_normalize(raw_df['tastes'])
+
+    return pd.merge(df, pd.json_normalize(raw_df['beers']), left_index=True, right_index=True)
 
 
 def get_taste_columns(df):
@@ -38,11 +43,11 @@ def create_recommender_system(melted_df):
         user_id='index',
         item_id='product',
         target='rating',
-        similarity_type='pearson'
+        similarity_type='cosine'
     )
 
-    recommending_system.save('model/recommending_system')
-    print("[INFO] Model was saved in folder 'model/recommending_system/' and it's ready to recommend!")
+    recommending_system.save('data/recommending_system')
+    print("[INFO] Model was saved in folder 'data/recommending_system/' and it's ready to recommend!")
 
 
 def main():

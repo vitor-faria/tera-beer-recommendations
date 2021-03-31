@@ -58,7 +58,7 @@ def display_pesquisa(state):
     st.text("")
     st.markdown(
         '''
-        ### Parte 1: Qual a sua opinião sobre os alimentos abaixo?
+        ### **Parte 1**: Qual a sua opinião sobre os **alimentos** abaixo?
 
         Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".
         '''
@@ -92,7 +92,7 @@ def display_pesquisa(state):
         feat_paladar[feature_name] = st.radio(question, options, index=1)
         st.text("")
 
-    st.markdown('### Parte 2: Qual a sua opinião sobre os seguintes estilos de cerveja?')
+    st.markdown('### **Parte 2**: Qual a sua opinião sobre os seguintes **estilos de cerveja**?')
 
     beer_questions = {
         'Cerveja Pilsen': 'Pilsen/Lager',
@@ -149,9 +149,12 @@ def display_pesquisa(state):
             ).to_dataframe()
 
             st.dataframe(recommendations)
-            st.success('Pronto! Confira a página Sugestões do menu à esquerda')
-            sleep(3)
-            state.recommendations, state.paladar = recommendations, df_paladar
+            if recommendations.empty and exclude_known:
+                st.error('Você conhece muitas cervejas ein?! Que tal desmarcar a caixa acima?')
+            else:
+                st.success('Pronto! Confira a página Sugestões do menu à esquerda')
+                sleep(3)
+                state.recommendations, state.paladar = recommendations, df_paladar
 
 
 def display_sugestoes(state):

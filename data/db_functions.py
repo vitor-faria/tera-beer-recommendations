@@ -21,10 +21,12 @@ class DBFunctions:
 
         return df
 
-    def send_answers_to_db(self, email, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
+    def send_answers_to_db(self, email, name, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
         if self.engine is None:
             self.connect_to_db()
-        df = self._build_record_df(email, recommendations, df_paladar, accept_beer_offers, allow_data_usage)
+        df = self._build_record_df(
+            email, name, recommendations, df_paladar, accept_beer_offers, allow_data_usage
+        )
         df.to_sql(
             name='user_recommendations',
             con=self.engine,
@@ -38,7 +40,7 @@ class DBFunctions:
         )
 
     @staticmethod
-    def _build_record_df(email, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
+    def _build_record_df(email, name, recommendations, df_paladar, accept_beer_offers, allow_data_usage):
         taste_columns = [column for column in df_paladar.columns if column.startswith('Alimento')]
         beer_columns = [column for column in df_paladar.columns if column.startswith('Cerveja')]
 
@@ -59,6 +61,7 @@ class DBFunctions:
 
         df = pd.DataFrame({
             "email": [email],
+            "name": [name],
             "tastes": [tastes],
             "beers": [beers],
             "origin": ["App"],

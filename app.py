@@ -148,7 +148,7 @@ def display_pesquisa(state):
                 exclude_known=exclude_known,
             ).to_dataframe()
 
-            st.dataframe(recommendations)
+            # st.dataframe(recommendations)
             if recommendations.empty and exclude_known:
                 st.error('Você conhece muitas cervejas ein?! Que tal desmarcar a caixa acima?')
             else:
@@ -185,133 +185,147 @@ def display_sugestoes(state):
         'Cerveja Lambic': 'Lambic'
     }
 
-    recommendations.replace({'product': rename_beer_styles}, inplace=True)
+    if not isinstance(recommendations, pd.DataFrame):
+        st.error('Sua sessão expirou, responda novamente o formulário para ver as suas recomendações.')
 
-    df_cervejas = get_beer_list()
-    recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='terabeer_style')
-    recommended_labels.sort_values(by=['score', 'ratings_avg'], ascending=[False, False])
-    # st.dataframe(recommended_labels)
+    else:
+        recommendations.replace({'product': rename_beer_styles}, inplace=True)
 
-    df_style_1 = recommended_labels[recommended_labels['rank'] == 1]
-    df_style_2 = recommended_labels[recommended_labels['rank'] == 2]
-    df_style_3 = recommended_labels[recommended_labels['rank'] == 3]
+        df_cervejas = get_beer_list()
+        recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='terabeer_style')
+        recommended_labels.sort_values(by=['score', 'ratings_avg'], ascending=[False, False])
+        # st.dataframe(recommended_labels)
+        origins = recommended_labels['origin_state'].unique().tolist()
+        origin_filter = st.multiselect("Filtrar por Estado:", origins, default=origins)
+        filtered_labels = recommended_labels[recommended_labels['origin_state'].isin(origin_filter)]
 
-    markdown_list = []
-    image_list = []
-    for df_style in [df_style_1, df_style_2, df_style_3]:
-        if not df_style.empty:
-            df_style.reset_index(drop=True, inplace=True)
-            style_name = df_style['terabeer_style'][0]
-            style_rank = df_style['rank'][0]
-            style_score = df_style['score'][0]
-            style_description = df_style['style_description'][0]
+        df_style_1 = filtered_labels[filtered_labels['rank'] == 1]
+        df_style_2 = filtered_labels[filtered_labels['rank'] == 2]
+        df_style_3 = filtered_labels[filtered_labels['rank'] == 3]
 
-            style_markdown = f"""
-            <div>
-                <br>
-                <h2>
-                    Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)
-                </h2>
-                <br>
-                <p>
-                    {style_description}
-                </p>
-                <br>
-            </div>
-            """
-            st.markdown(style_markdown, unsafe_allow_html=True)
-            markdown_list.append(style_markdown)
+        markdown_list = []
+        image_list = []
+        for df_style in [df_style_1, df_style_2, df_style_3]:
+            if not df_style.empty:
+                df_style.reset_index(drop=True, inplace=True)
+                style_name = df_style['terabeer_style'][0]
+                style_rank = df_style['rank'][0]
+                style_score = df_style['score'][0]
+                style_description = df_style['style_description'][0]
+                style_harmonization = df_style['harmonization'][0]
+                if style_harmonization:
+                    harmonization_line = f'<br><br> <b>Harmoniza bem com</b>: {style_harmonization}'
+                else:
+                    harmonization_line = ''
 
-            for index, row in df_style.iterrows():
-                beer = row['name']
-                brewery = row['brand']
-                abv = row['abv']
-                ibu = row['ibu']
-                avg_rating = row['ratings_avg']
-                count_ratings = int(row['ratings_count'])
-                figure = row['figure']
-                ratings_source = row['ratings_source']
-                ratings_url = row['ratings_url']
-                origin_state = row['origin_state']
-                offer_url = row['offer_url']
+                style_markdown = f"""
+                <div>
+                    <br>
+                    <h2>
+                        Estilo {style_rank}: <b>{style_name}</b> ({style_score:.1%} recomendado para você)
+                    </h2>
+                    <br>
+                    <p>
+                        <b>Descrição</b>: {style_description} {harmonization_line}
+                    </p>
+                    <br>
+                </div>
+                """
+                st.markdown(style_markdown, unsafe_allow_html=True)
+                markdown_list.append(style_markdown)
 
-                column1, column2 = st.beta_columns((1, 4))
+                for index, row in df_style.iterrows():
+                    beer = row['name']
+                    brewery = row['brand']
+                    abv = row['abv']
+                    ibu = row['ibu']
+                    avg_rating = row['ratings_avg']
+                    count_ratings = int(row['ratings_count'])
+                    figure = row['figure']
+                    ratings_source = row['ratings_source']
+                    ratings_url = row['ratings_url']
+                    origin_state = row['origin_state']
+                    offer_url = row['offer_url']
 
-                with column1:
-                    try:
-                        st.image(f'fig/{figure}', use_column_width=True)
-                        image_list.append(f'fig/{figure}')
-                        markdown_list.append(
-                            f"""
-                            <br>
-                            <div>
-                                <img
-                                    src="cid:image{len(image_list)}"
-                                    alt="Logo"
-                                    style="width:200px;height:200px;">
-                            </div>
-                            """
-                        )
+                    column1, column2 = st.beta_columns((1, 4))
 
-                    except FileNotFoundError:
-                        st.image('fig/placeholder-image.jpg', use_column_width=True)
-                        image_list.append('fig/placeholder-image.jpg')
-                        markdown_list.append(
-                            f"""
-                            <br>
-                            <div>
-                                <img
-                                    src="cid:image{len(image_list)}"
-                                    alt="Logo"
-                                    style="width:200px;height:200px;">
-                            </div>
-                            """
-                        )
+                    with column1:
+                        try:
+                            st.image(f'fig/{figure}', use_column_width=True)
+                            image_list.append(f'fig/{figure}')
+                            markdown_list.append(
+                                f"""
+                                <br>
+                                <div>
+                                    <img
+                                        src="cid:image{len(image_list)}"
+                                        alt="Logo"
+                                        style="width:200px;height:200px;">
+                                </div>
+                                """
+                            )
 
-                with column2:
-                    ratings_source_url = f'<a href="{ratings_url}" target="_blank">{ratings_source}</a>'
-                    ratings_line = f'{avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})'
-                    ibu_line = f'{int(ibu)} unidades de amargor' if ibu > 0 else 'Indisponível'
-                    offer_line = f'<b><a href="{offer_url}" target="_blank">Quero!</a></b>'
-                    beer_markdown = f"""
-                    <div>
-                        <h3>{beer} - {brewery}</h3>
-                        <p>
-                            <b>Origem</b>: {origin_state}<br>
-                            <b>Nota média</b>: {ratings_line}<br>
-                            <b>ABV</b>: {abv}% álcool <br>
-                            <b>IBU</b>: {ibu_line} <br>
-                            {offer_line}
-                        </p>
-                    </div>
-                    """
-                    st.markdown(beer_markdown, unsafe_allow_html=True)
-                    markdown_list.append(beer_markdown)
+                        except FileNotFoundError:
+                            st.image('fig/placeholder-image.jpg', use_column_width=True)
+                            image_list.append('fig/placeholder-image.jpg')
+                            markdown_list.append(
+                                f"""
+                                <br>
+                                <div>
+                                    <img
+                                        src="cid:image{len(image_list)}"
+                                        alt="Logo"
+                                        style="width:200px;height:200px;">
+                                </div>
+                                """
+                            )
 
-    email = st.text_input('Para receber as sugestões, deixe seu email e aperte Enter:')
-    if email:
-        accept_beer_offers = st.checkbox(
-            'Aceito receber por e-mail ofertas especiais de cervejas com base nas minhas respostas',
-            True
-        )
-        allow_data_usage = st.checkbox(
-            'Permito que utilizem minhas respostas para melhorar recomendações futuras',
-            True
-        )
+                    with column2:
+                        ratings_source_url = f'<a href="{ratings_url}" target="_blank">{ratings_source}</a>'
+                        ratings_line = f'{avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})'
+                        ibu_line = f'{int(ibu)} unidades de amargor' if ibu > 0 else 'Indisponível'
+                        offer_line = f'<b><a href="{offer_url}" target="_blank">Quero!</a></b>'
+                        beer_markdown = f"""
+                        <div>
+                            <h3>{beer} - {brewery}</h3>
+                            <p>
+                                <b>Origem</b>: {origin_state}<br>
+                                <b>Nota média</b>: {ratings_line}<br>
+                                <b>ABV</b>: {abv}% álcool <br>
+                                <b>IBU</b>: {ibu_line} <br>
+                                {offer_line}
+                            </p>
+                        </div>
+                        """
+                        st.markdown(beer_markdown, unsafe_allow_html=True)
+                        markdown_list.append(beer_markdown)
 
-        if st.button('Enviar recomendações por email'):
-            send_mail(email, markdown_list, image_list)
-            st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
+        email = st.text_input('Para receber as sugestões, deixe seu email e aperte Enter:')
+        if email:
+            name = st.text_input('Qual seu nome?')
+            accept_beer_offers = st.checkbox(
+                'Aceito receber por e-mail ofertas especiais de cervejas com base nas minhas respostas',
+                True
+            )
+            allow_data_usage = st.checkbox(
+                'Permito que utilizem minhas respostas para melhorar recomendações futuras',
+                True
+            )
 
-            if accept_beer_offers or allow_data_usage:
-                db = DBFunctions()
-                db.send_answers_to_db(
-                    email=email,
-                    recommendations=recommendations,
-                    df_paladar=df_paladar,
-                    accept_beer_offers=accept_beer_offers,
-                    allow_data_usage=allow_data_usage,
-                )
+            if st.button('Enviar recomendações por email'):
+                send_mail(email, name, markdown_list, image_list)
+                st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
+
+                if accept_beer_offers or allow_data_usage:
+                    db = DBFunctions()
+                    db.send_answers_to_db(
+                        email=email,
+                        name=name,
+                        recommendations=recommendations,
+                        df_paladar=df_paladar,
+                        accept_beer_offers=accept_beer_offers,
+                        allow_data_usage=allow_data_usage,
+                    )
 
 
 class _SessionState:

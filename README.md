@@ -1,4 +1,4 @@
-# Tera Beer Recommendations
+# TeraBeer Recommendations
 
 Esse é um projeto desenvolvido ao longo do Bootcamp de Ciência de Dados e Machine Learning da [Tera](https://somostera.com/). Trata-se de 
 uma aplicação Python/Streamlit que gera listas de recomendação de cervejas artesanais brasileiras com base no paladar do usuário, e utilizando um sistema 
@@ -23,7 +23,9 @@ export EMAIL_PASSWORD=[PASSWORD]
 export DB_URL=[DB_URL]
 ```
 
-> Importante: para uso de contas do Gmail para o envio de e-mails, é necessário autorizar 
+Para ter acesso ao banco de dados (`DB_URL`), solicite acesso à Equipe TeraBeer.
+
+> Importante: para usar contas do Gmail no envio de e-mails, é necessário autorizar 
 > o uso de apps menos seguros nas configurações da Conta Google.
 
 ### Recriação do modelo
@@ -51,4 +53,4 @@ Produção: https://terabeer-recomendacoes.herokuapp.com/
 A aplicação possui os arquivos `setup.sh` e `Procfile` para facilitar o deploy de uma branch no Heroku pela GUI.
 
 > Importante: para que a aplicação funcione adequadamente em produção, as mesmas variáveis de ambiente 
-> precisam ser configuradas.
+> precisam ser devidamente configuradas.

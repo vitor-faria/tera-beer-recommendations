@@ -49,7 +49,6 @@ def display_pesquisa(state):
     )
     st.image('fig/terabeer_banner.jpeg')
 
-    # st.title(':beer: TERABEER')
     st.markdown('''
     ## Olá, que bom que você veio!
     
@@ -76,7 +75,7 @@ def display_pesquisa(state):
         ''')
         st.text("")
 
-        taste_questions = {  # Key must match column names used in training, value is displayed in forms
+        taste_questions = {  # Key matches column names used in training, value is displayed in forms
             'Alimento Chocolate amargo': 'Chocolate 70% cacau',
             'Alimento Beringela': 'Beringela',
             'Alimento Folhas escuras': 'Folhas escuras',
@@ -130,20 +129,21 @@ def display_pesquisa(state):
         st.text("")
         exclude_known = st.checkbox('Desejo receber recomendações somente de estilos que eu não conheço', True)
 
+        df_paladar = pd.DataFrame([feat_paladar], index=[-1])  # User-item matrix
         preference_map = {
             "Gosto": 1,
             "Não gosto": 0,
             "Indiferente": 0.5,
             "Desconheço": np.nan
         }
-        df_paladar = pd.DataFrame([feat_paladar], index=[-1])
         df_paladar.replace(preference_map, inplace=True)
         melt_df = melt_user_item_matrix(df_paladar)
         new_observation_data = melt_df
         # st.dataframe(new_observation_data)
+
         recommendable_beers = get_beer_columns(df_paladar)
         recommendable_beers.remove('Cerveja Pilsen')
-        if not exclude_known:  # Exclude beers user already don't like
+        if not exclude_known:  # Exclude beers user doesn't like at all if known beers can be recommended
             dislike_beers = melt_df[melt_df['rating'] < 1]['product'].to_list()
             for dislike_beer in dislike_beers:
                 if dislike_beer in recommendable_beers:
@@ -158,7 +158,7 @@ def display_pesquisa(state):
                 st.error('Não temos nenhuma cerveja para te recomendar :/')
             else:
                 with st.spinner(text='Aguarde um instante enquanto analisamos as suas respostas...'):
-                    sleep(4)
+                    sleep(4)  # Pretend making recommendations takes a while. Actually they are pretty fast
                     recommendations = model.recommend(
                         users=[-1],
                         k=3,
@@ -189,34 +189,37 @@ def display_sugestoes(state):
     # st.dataframe(df_paladar)
     # st.dataframe(recommendations)
 
-    rename_beer_styles = {
-        'Cerveja Blonde': 'Blonde Ale',
-        'Cerveja Trigo': 'Weiss (Trigo)',
-        'Cerveja APA': 'American Pale Ale',
-        'Cerveja IPA': 'India Pale Ale',
-        'Cerveja Session IPA': 'Session IPA',
-        'Cerveja NEIPA': 'New England IPA',
-        'Cerveja Porter': 'Porter/Stout',
-        'Cerveja Malzbier': 'Dunkel/Malzbier',
-        'Cerveja Witbier': 'Witbier',
-        'Cerveja Sour': 'Sour/Fruit',
-        'Cerveja RIS': 'Russian Imperial Stout',
-        'Cerveja Lambic': 'Lambic'
-    }
-
     if not isinstance(recommendations, pd.DataFrame):
         st.error('Sua sessão expirou, responda novamente o formulário para ver as suas recomendações.')
 
     else:
+        rename_beer_styles = {
+            'Cerveja Blonde': 'Blonde Ale',
+            'Cerveja Trigo': 'Weiss (Trigo)',
+            'Cerveja APA': 'American Pale Ale',
+            'Cerveja IPA': 'India Pale Ale',
+            'Cerveja Session IPA': 'Session IPA',
+            'Cerveja NEIPA': 'New England IPA',
+            'Cerveja Porter': 'Porter/Stout',
+            'Cerveja Malzbier': 'Dunkel/Malzbier',
+            'Cerveja Witbier': 'Witbier',
+            'Cerveja Sour': 'Sour/Fruit',
+            'Cerveja RIS': 'Russian Imperial Stout',
+            'Cerveja Lambic': 'Lambic'
+        }
         recommendations.replace({'product': rename_beer_styles}, inplace=True)
 
-        df_cervejas = get_beer_list()
+        with st.spinner('Buscando cervejas...'):
+            df_cervejas = get_beer_list()
+
         recommended_labels = pd.merge(recommendations, df_cervejas, left_on='product', right_on='terabeer_style')
         recommended_labels.sort_values(by=['score', 'ratings_avg'], ascending=[False, False])
         # st.dataframe(recommended_labels)
+
         origins = recommended_labels['origin_state'].unique().tolist()
         origin_filter = st.multiselect("Filtrar por estado:", origins, default=origins)
         filtered_labels = recommended_labels[recommended_labels['origin_state'].isin(origin_filter)]
+        max_beers = st.slider('Número máximo de rótulos por estilo', 1, 5, 3)
 
         df_style_1 = filtered_labels[filtered_labels['rank'] == 1]
         df_style_2 = filtered_labels[filtered_labels['rank'] == 2]
@@ -253,7 +256,7 @@ def display_sugestoes(state):
                 st.markdown(style_markdown, unsafe_allow_html=True)
                 markdown_list.append(style_markdown)
 
-                for index, row in df_style.iterrows():
+                for index, row in df_style.iloc[0:max_beers, :].iterrows():
                     beer = row['name']
                     brewery = row['brand']
                     abv = row['abv']
@@ -268,7 +271,7 @@ def display_sugestoes(state):
 
                     column1, column2 = st.beta_columns((1, 4))
 
-                    with column1:
+                    with column1:  # Column with beer labels
                         try:
                             st.image(f'fig/{figure}', use_column_width=True)
                             image_list.append(f'fig/{figure}')
@@ -299,7 +302,7 @@ def display_sugestoes(state):
                                 """
                             )
 
-                    with column2:
+                    with column2:  # Column with beer characteristics
                         ratings_source_url = f'<a href="{ratings_url}" target="_blank">{ratings_source}</a>'
                         ratings_line = f'{avg_rating:.3} ({count_ratings} avaliações no {ratings_source_url})'
                         ibu_line = f'{int(ibu)} unidades de amargor' if ibu > 0 else 'Indisponível'
@@ -342,7 +345,7 @@ def display_sugestoes(state):
 
                 st.success('Enviado! Confira sua caixa de entrada e lixo eletrônico.')
 
-                if accept_beer_offers or allow_data_usage:
+                if accept_beer_offers or allow_data_usage:  # Try to send answers to database
                     db = DBFunctions()
                     try:
                         db.send_answers_to_db(

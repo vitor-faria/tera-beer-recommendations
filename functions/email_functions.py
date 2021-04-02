@@ -53,7 +53,7 @@ def get_email_message(to_name, markdown_list):
         A sua opinião vai nos ajudar muito!
     </p>
     <p>
-        A <b>Equipe TeraBeer</b> espera ter ajudado em sua jornada cervejeira e agradece pela colaboração.
+        A <b>Equipe TeraBeer</b> espera ter contribuído para sua jornada cervejeira e agradece pela colaboração.<br>
         Esperamos nos ver em breve, com novidades!
     </p>
     <p style="color:red;">
@@ -66,7 +66,9 @@ def get_email_message(to_name, markdown_list):
         {content} 
     </div>
     <p>
-        Não esqueça de responder nossa <a target="_blank" href="https://forms.gle/sxpYt7GBYMnFKYA77">pesquisa</a>!
+        <br> 
+        <br>
+        Não esqueça de responder a nossa <a target="_blank" href="https://forms.gle/sxpYt7GBYMnFKYA77">pesquisa</a>!
     </p>
     """
 

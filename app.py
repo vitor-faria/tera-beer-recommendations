@@ -22,10 +22,9 @@ def main():
         "Sugestões": display_sugestoes,
     }
 
-    st.sidebar.title("TeraBeer Recommendations :beer:")
-    st.sidebar.markdown("Recomendações de cerveja artesanal brasileiras baseadas no seu paladar e com uso de IA.")
+    st.sidebar.title(":bookmark_tabs: MENU")
     page = st.sidebar.selectbox(
-        "Preencha a pesquisa e veja as cervejas recomendadas na aba Sugestões",
+        "",
         tuple(pages.keys())
     )
 
@@ -43,126 +42,144 @@ def get_beer_list():
 
 
 def display_pesquisa(state):
-
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.markdown(
         '<style>div[role="radiogroup"] >  :first-child{display: none !important;}</style>',
         unsafe_allow_html=True
     )
 
-    st.title(':pencil: Pesquisa')
-    st.markdown('Responda as perguntas a seguir a respeito do seu paladar e preferências de cerveja.')
+    st.title(':beer: TERABEER')
+    st.markdown('''
+    ## Olá, que bom que você veio!
+    
+    O TeraBeer é um sistema de recomendação de cervejas artesanais brasileiras baseado no seu paladar, 
+    que utiliza Inteligência Artificial.
+    
+    Antes de mais nada, confirme se você tem mais de 18 anos:
+    ''')
 
-    options = ['', 'Gosto', 'Não gosto', 'Indiferente', 'Desconheço']
+    if st.checkbox('Tenho mais de 18 anos, internet!', False):
+        st.text("")
+        st.markdown('''
+        ## :pencil: **PESQUISA**
+        
+        Para gerar as suas recomendações, responda as perguntas a seguir a respeito do seu paladar e 
+        preferências de cerveja.
+        ''')
 
-    st.text("")
-    st.markdown(
-        '''
-        ### **Parte 1**: Qual a sua opinião sobre os **alimentos** abaixo?
+        options = ['', 'Gosto', 'Não gosto', 'Indiferente', 'Desconheço']
 
-        Para opções com mais de um alimento, caso goste de pelo menos um, escolha a opção "Gosto".
-        '''
-    )
-
-    taste_questions = {  # Key must match column names used in training, value is displayed in forms
-        'Alimento Chocolate amargo': 'Chocolate 70% cacau',
-        'Alimento Beringela': 'Beringela',
-        'Alimento Folhas escuras': 'Rúcula/escarola/espinafre',
-        'Alimento Mel': 'Mel',
-        'Alimento Chocolate ao leite': 'Chocolate ao leite',
-        'Alimento Oreo': 'Oreo/cookies',
-        'Alimento Salgadinho': 'Ruffles/salgadinho',
-        'Alimento Tomate': 'Tomate/ketchup',
-        'Alimento Margherita': 'Margherita',
-        'Alimento Limonada': 'Limonada',
-        'Alimento Laranja': 'Suco de laranja',
-        'Alimento Maracujá': 'Suco de maracujá',
-        'Alimento Tangerina': 'Mexerica/tangerina',
-        'Alimento Pimentas': 'Pimentas/especiarias',
-        'Alimento Cravo': 'Cravo',
-        'Alimento Banana': 'Banana',
-        'Alimento Gengibre': 'Gengibre',
-        'Alimento Canela': 'Canela',
-        'Alimento Bacon': 'Bacon/lombo defumado',
-        'Alimento Café': 'Café sem açúcar'
-    }
-
-    feat_paladar = {}
-    for feature_name, question in taste_questions.items():
-        feat_paladar[feature_name] = st.radio(question, options, index=1)
+        st.markdown('''
+            ### QUAL A SUA OPINIÃO SOBRE OS **ALIMENTOS E BEBIDAS** ABAIXO?
+        ''')
         st.text("")
 
-    st.markdown('### **Parte 2**: Qual a sua opinião sobre os seguintes **estilos de cerveja**?')
+        taste_questions = {  # Key must match column names used in training, value is displayed in forms
+            'Alimento Chocolate amargo': 'Chocolate 70% cacau',
+            'Alimento Beringela': 'Beringela',
+            'Alimento Folhas escuras': 'Folhas escuras',
+            'Alimento Mel': 'Mel',
+            'Alimento Chocolate ao leite': 'Chocolate ao leite',
+            'Alimento Oreo': "Cookies & Cream",
+            'Alimento Salgadinho': 'Batata chips',
+            'Alimento Tomate': 'Tomate',
+            'Alimento Margherita': 'Margarita',
+            'Alimento Limonada': 'Limonada',
+            'Alimento Laranja': 'Laranja',
+            'Alimento Maracujá': 'Maracujá',
+            'Alimento Tangerina': 'Mexerica/tangerina',
+            'Alimento Pimentas': 'Pimenta',
+            'Alimento Cravo': 'Cravo',
+            'Alimento Banana': 'Banana',
+            'Alimento Gengibre': 'Gengibre',
+            'Alimento Canela': 'Canela',
+            'Alimento Bacon': 'Bacon',
+            'Alimento Café': 'Café sem açúcar'
+        }
 
-    beer_questions = {
-        'Cerveja Pilsen': 'Pilsen/Lager',
-        'Cerveja Blonde': 'Golden Ale/Blonde Ale',
-        'Cerveja Trigo': 'Trigo (Weiss)',
-        'Cerveja APA': 'American Pale Ale (APA)',
-        'Cerveja IPA': 'India Pale Ale (IPA)',
-        'Cerveja Session IPA': 'Session IPA',
-        'Cerveja NEIPA': 'New England IPA/Juice IPA',
-        'Cerveja Porter': 'Porter/Stout',
-        'Cerveja Malzbier': 'Dunkel/Malzbier',
-        'Cerveja Witbier': 'Witbier',
-        'Cerveja Sour': 'Fruit Beer/Sour',
-        'Cerveja RIS': 'Russian Imperial Stout/Pastry Stout',
-        'Cerveja Lambic': 'Lambic'
-    }
+        feat_paladar = {}
+        for feature_name, question in taste_questions.items():
+            feat_paladar[feature_name] = st.radio(question, options, index=1)
+            st.text("")
 
-    for feature_name, question in beer_questions.items():
-        feat_paladar[feature_name] = st.radio(question, options, index=4)
+        st.markdown('### QUAL A SUA OPINIÃO SOBRE OS SEGUINTES **ESTILOS DE CERVEJA**?')
         st.text("")
 
-    exclude_known = st.checkbox('Desejo receber recomendações somente de estilos que eu não conheço', True)
+        beer_questions = {
+            'Cerveja Pilsen': 'Pilsen/Lager',
+            'Cerveja Blonde': 'Golden Ale/Blonde Ale',
+            'Cerveja Trigo': 'Trigo (Weiss)',
+            'Cerveja APA': 'American Pale Ale (APA)',
+            'Cerveja IPA': 'India Pale Ale (IPA)',
+            'Cerveja Session IPA': 'Session IPA',
+            'Cerveja NEIPA': 'New England IPA/Juice IPA',
+            'Cerveja Porter': 'Porter/Stout',
+            'Cerveja Malzbier': 'Dunkel/Malzbier',
+            'Cerveja Witbier': 'Witbier',
+            'Cerveja Sour': 'Fruit Beer/Sour',
+            'Cerveja RIS': 'Russian Imperial Stout/Pastry Stout',
+            'Cerveja Lambic': 'Lambic'
+        }
 
-    preference_map = {
-        "Gosto": 1,
-        "Não gosto": 0,
-        "Indiferente": 0.5,
-        "Desconheço": np.nan
-    }
-    df_paladar = pd.DataFrame([feat_paladar], index=[-1])
-    df_paladar.replace(preference_map, inplace=True)
-    melt_df = melt_user_item_matrix(df_paladar)
-    new_observation_data = melt_df
-    # st.dataframe(new_observation_data)
-    recommendable_beers = get_beer_columns(df_paladar)
-    recommendable_beers.remove('Cerveja Pilsen')
-    if not exclude_known:  # Exclude beers user already don't like
-        dislike_beers = melt_df[melt_df['rating'] < 1]['product'].to_list()
-        for dislike_beer in dislike_beers:
-            if dislike_beer in recommendable_beers:
-                recommendable_beers.remove(dislike_beer)
+        for feature_name, question in beer_questions.items():
+            feat_paladar[feature_name] = st.radio(question, options, index=4)
+            st.text("")
 
-    if st.button('Gerar recomendações'):
-        model = load_model('data/recommending_system')
-        if len(recommendable_beers) == 0:
-            st.error('Não temos nenhuma cerveja para te recomendar :/')
-        else:
-            recommendations = model.recommend(
-                users=[-1],
-                k=3,
-                items=recommendable_beers,
-                new_observation_data=SFrame(new_observation_data),
-                exclude_known=exclude_known,
-            ).to_dataframe()
+        st.text("")
+        exclude_known = st.checkbox('Desejo receber recomendações somente de estilos que eu não conheço', True)
 
-            # st.dataframe(recommendations)
-            if recommendations.empty and exclude_known:
-                st.error('Você conhece muitas cervejas ein?! Que tal desmarcar a caixa acima?')
+        preference_map = {
+            "Gosto": 1,
+            "Não gosto": 0,
+            "Indiferente": 0.5,
+            "Desconheço": np.nan
+        }
+        df_paladar = pd.DataFrame([feat_paladar], index=[-1])
+        df_paladar.replace(preference_map, inplace=True)
+        melt_df = melt_user_item_matrix(df_paladar)
+        new_observation_data = melt_df
+        # st.dataframe(new_observation_data)
+        recommendable_beers = get_beer_columns(df_paladar)
+        recommendable_beers.remove('Cerveja Pilsen')
+        if not exclude_known:  # Exclude beers user already don't like
+            dislike_beers = melt_df[melt_df['rating'] < 1]['product'].to_list()
+            for dislike_beer in dislike_beers:
+                if dislike_beer in recommendable_beers:
+                    recommendable_beers.remove(dislike_beer)
+
+        st.text("")
+        st.text("")
+        st.text("")
+        if st.button('Gerar recomendações'):
+            model = load_model('data/recommending_system')
+            if len(recommendable_beers) == 0:
+                st.error('Não temos nenhuma cerveja para te recomendar :/')
             else:
-                st.success('Pronto! Confira a página Sugestões do menu à esquerda')
-                sleep(3)
-                state.recommendations, state.paladar = recommendations, df_paladar
+                with st.spinner(text='Aguarde um instante enquanto analisamos as suas respostas...'):
+                    sleep(4)
+                    recommendations = model.recommend(
+                        users=[-1],
+                        k=3,
+                        items=recommendable_beers,
+                        new_observation_data=SFrame(new_observation_data),
+                        exclude_known=exclude_known,
+                    ).to_dataframe()
+
+                # st.dataframe(recommendations)
+                if recommendations.empty and exclude_known:
+                    st.error('Você conhece muitas cervejas ein?! Que tal desmarcar a caixa acima?')
+                else:
+                    st.success('Pronto! Selecione no menu à esquerda a página Sugestões.')
+                    sleep(3)
+                    state.recommendations, state.paladar = recommendations, df_paladar
 
 
 def display_sugestoes(state):
 
-    st.title(':beer: Sugestões')
+    st.title(':beers: SUGESTÕES')
     st.markdown('''
-    Essas são as cervejas artesanais brasileiras **mais recomendadas para você**. 
-    Ao final você poderá enviar a lista de cervejas para o seu e-mail.
+    Estas são as cervejas artesanais brasileiras **mais recomendadas para você**. 
+    Ao final, você poderá enviar a lista de cervejas para o seu e-mail.
     ''')
 
     recommendations, df_paladar = state.recommendations, state.paladar
@@ -196,7 +213,7 @@ def display_sugestoes(state):
         recommended_labels.sort_values(by=['score', 'ratings_avg'], ascending=[False, False])
         # st.dataframe(recommended_labels)
         origins = recommended_labels['origin_state'].unique().tolist()
-        origin_filter = st.multiselect("Filtrar por Estado:", origins, default=origins)
+        origin_filter = st.multiselect("Filtrar por estado:", origins, default=origins)
         filtered_labels = recommended_labels[recommended_labels['origin_state'].isin(origin_filter)]
 
         df_style_1 = filtered_labels[filtered_labels['rank'] == 1]
@@ -300,7 +317,10 @@ def display_sugestoes(state):
                         st.markdown(beer_markdown, unsafe_allow_html=True)
                         markdown_list.append(beer_markdown)
 
-        email = st.text_input('Para receber as sugestões, deixe seu email e aperte Enter:')
+        st.text("")
+        st.text("")
+        st.markdown("### :mailbox: Para receber as sugestões, digite seu e-mail abaixo e aperte enter:")
+        email = st.text_input('')
         if email:
             name = st.text_input('Qual seu nome?')
             accept_beer_offers = st.checkbox(
@@ -313,19 +333,24 @@ def display_sugestoes(state):
             )
 
             if st.button('Enviar recomendações por email'):
-                send_mail(email, name, markdown_list, image_list)
-                st.success('Pronto! Confira no seu inbox e, se não encontrar, dá uma olhada na caixa de spam.')
+                with st.spinner(text='Enviando...'):
+                    send_mail(email, name, markdown_list, image_list)
+
+                st.success('Enviado! Confira sua caixa de entrada e lixo eletrônico.')
 
                 if accept_beer_offers or allow_data_usage:
                     db = DBFunctions()
-                    db.send_answers_to_db(
-                        email=email,
-                        name=name,
-                        recommendations=recommendations,
-                        df_paladar=df_paladar,
-                        accept_beer_offers=accept_beer_offers,
-                        allow_data_usage=allow_data_usage,
-                    )
+                    try:
+                        db.send_answers_to_db(
+                            email=email,
+                            name=name,
+                            recommendations=recommendations,
+                            df_paladar=df_paladar,
+                            accept_beer_offers=accept_beer_offers,
+                            allow_data_usage=allow_data_usage,
+                        )
+                    except KeyError:
+                        pass
 
 
 class _SessionState:

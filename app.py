@@ -19,7 +19,7 @@ def main():
     state = _get_state()
     pages = {
         "Pesquisa": display_pesquisa,
-        "Sugestões": display_sugestoes,
+        "Recomendações": display_sugestoes,
     }
 
     st.sidebar.title(":bookmark_tabs: MENU")
@@ -47,24 +47,26 @@ def display_pesquisa(state):
         '<style>div[role="radiogroup"] >  :first-child{display: none !important;}</style>',
         unsafe_allow_html=True
     )
+    st.image('fig/terabeer_banner.jpeg')
 
-    st.title(':beer: TERABEER')
+    # st.title(':beer: TERABEER')
     st.markdown('''
     ## Olá, que bom que você veio!
     
     O TeraBeer é um sistema de recomendação de cervejas artesanais brasileiras baseado no seu paladar, 
     que utiliza Inteligência Artificial.
     
-    Antes de mais nada, confirme se você tem mais de 18 anos:
+    Antes de mais nada, confirme que você tem mais de 18 anos:
     ''')
 
-    if st.checkbox('Tenho mais de 18 anos, internet!', False):
+    if st.checkbox('Sim, tenho mais de 18 anos, internet!', False):
+        st.text("")
+        st.markdown("![Sei...](https://media.giphy.com/media/VhLc1Mb9HlPo2Jo2ZG/giphy.gif)")
         st.text("")
         st.markdown('''
         ## :pencil: **PESQUISA**
         
-        Para gerar as suas recomendações, responda as perguntas a seguir a respeito do seu paladar e 
-        preferências de cerveja.
+        Agora responda as duas perguntas a seguir para gerar as suas recomendações.
         ''')
 
         options = ['', 'Gosto', 'Não gosto', 'Indiferente', 'Desconheço']
@@ -169,14 +171,14 @@ def display_pesquisa(state):
                 if recommendations.empty and exclude_known:
                     st.error('Você conhece muitas cervejas ein?! Que tal desmarcar a caixa acima?')
                 else:
-                    st.success('Pronto! Selecione no menu à esquerda a página Sugestões.')
+                    st.success('Pronto! Selecione no menu à esquerda a página Recomendações.')
                     sleep(3)
                     state.recommendations, state.paladar = recommendations, df_paladar
 
 
 def display_sugestoes(state):
 
-    st.title(':beers: SUGESTÕES')
+    st.title(':beers: CERVEJAS RECOMENDADAS')
     st.markdown('''
     Estas são as cervejas artesanais brasileiras **mais recomendadas para você**. 
     Ao final, você poderá enviar a lista de cervejas para o seu e-mail.
@@ -319,18 +321,20 @@ def display_sugestoes(state):
 
         st.text("")
         st.text("")
-        st.markdown("### :mailbox: Para receber as sugestões, digite seu e-mail abaixo e aperte enter:")
+        st.markdown("### :mailbox: Para receber a lista acima no seu e-mail, digite-o abaixo e aperte enter:")
         email = st.text_input('')
         if email:
-            name = st.text_input('Qual seu nome?')
+            st.markdown("### Qual seu nome?")
+            name = st.text_input(' ')
             accept_beer_offers = st.checkbox(
-                'Aceito receber por e-mail ofertas especiais de cervejas com base nas minhas respostas',
+                'Aceito receber novidades do TeraBeer.',
                 True
             )
             allow_data_usage = st.checkbox(
-                'Permito que utilizem minhas respostas para melhorar recomendações futuras',
+                'Permito que utilizem minhas respostas para melhorar recomendações futuras.',
                 True
             )
+            st.text("")
 
             if st.button('Enviar recomendações por email'):
                 with st.spinner(text='Enviando...'):

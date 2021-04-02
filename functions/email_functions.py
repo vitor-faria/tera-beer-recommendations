@@ -20,6 +20,11 @@ def send_mail(to_email, to_name, markdown_list, image_list):
     message_html = get_email_message(to_name, markdown_list)
     msg_text = MIMEText(message_html, 'html')
     message.attach(msg_text)
+    with open('fig/terabeer_banner.jpeg', 'rb') as fp:
+        msg_image = MIMEImage(fp.read())
+        fp.close()
+    msg_image.add_header('Content-ID', '<terabeer_banner>')
+    message.attach(msg_image)
 
     for image_index, image_filename in enumerate(image_list):
         with open(image_filename, 'rb') as fp:
@@ -40,26 +45,32 @@ def get_email_message(to_name, markdown_list):
     content = '<br> '.join(markdown_list)
     hello = f'Olá, <b>{to_name}</b>!' if to_name else 'Olá!'
     message_html = f"""
+    <div>
+        <img
+            src="cid:terabeer_banner"
+            alt="TeraBeer"
+            style="width:960px;height:180px;">
+    </div>
     <p>
         {hello}
     </p>
     <p>
         Abaixo está a sua lista de cervejas recomendadas pelo 
-        <a target="_blank" href="https://terabeer-recomendacoes.herokuapp.com/">TeraBeer</a>! :D
+        <a target="_blank" href="https://terabeer-recomendacoes.herokuapp.com/">TeraBeer</a>! =D
     </p>
     <p>
         Para que possamos melhorar a sua experiência em nosso app, conta pra gente 
-        <a target="_blank" href="https://forms.gle/sxpYt7GBYMnFKYA77">por aqui</a> o que achou das recomendações. 
+        <a target="_blank" href="https://forms.gle/sxpYt7GBYMnFKYA77">por aqui</a> o que achou. 
         A sua opinião vai nos ajudar muito!
     </p>
     <p>
         A <b>Equipe TeraBeer</b> espera ter contribuído para sua jornada cervejeira e agradece pela colaboração.<br>
         Esperamos nos ver em breve, com novidades!
     </p>
-    <p style="color:red;">
+    <p style="color: #fdaa02;">
         <b>Beba com moderação.</b>
     </p>
-    <h4 style="color:green;">
+    <h4 style="color: #30845b;">
         <b>CHEERS!</b>
     </h4>
     <div> 

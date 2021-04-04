@@ -6,7 +6,7 @@ de recomendação do tipo `ItemSimilarityRecommender` da biblioteca [Turi Create
 
 ## Ambiente de desenvolvimento
 
-Para criar o ambiente de desenvolvimento, é recomendado utilizar o `conda`.
+Para criar o ambiente de desenvolvimento, é recomendado utilizar o [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 Utilize os comandos a seguir para deixar o ambiente pronto para desenvolver
 
@@ -30,13 +30,14 @@ Para ter acesso ao banco de dados (`DB_URL`), solicite acesso à Equipe TeraBeer
 
 ### Recriação do modelo
 
-Para recriar o sistema de recomendação, execute o script
+Para recriar/retreinar o sistema de recomendação com novos dados, execute o script
 
 ```
 python data/create_recommender.py
 ```
 
-O sistema de recomendação será salvo em 4 arquivos na pasta `data/recommending_system`.
+Esse script executará uma consulta no banco de dados da aplicação e usará os dados para 
+recriar o sistema de recomendação, que será salvo em 4 arquivos na pasta `data/recommending_system`.
 
 ### Execução local
 

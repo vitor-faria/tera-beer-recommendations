@@ -12,7 +12,8 @@ SELECT
     ratings_url,
     COALESCE(origin_state, '???') AS origin_state,
     offer_url,
-    harmonization
+    harmonization,
+    discount_coupon
 FROM
     beer_list
 WHERE

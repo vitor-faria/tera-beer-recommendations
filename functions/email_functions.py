@@ -61,7 +61,8 @@ def get_email_message(to_name, markdown_list):
     <p>
         Para que possamos melhorar a sua experiência em nosso app, conta pra gente 
         <a target="_blank" href="https://forms.gle/sxpYt7GBYMnFKYA77">por aqui</a> o que achou. 
-        A sua opinião vai nos ajudar muito!
+        A sua opinião vai nos ajudar muito! E se quiser saber mais sobre esse projeto, dê uma olhada no nosso 
+        <a target="_blank" href="https://bit.ly/3t4dOMt">artigo</a>.
     </p>
     <p>
         A <b>Equipe TeraBeer</b> espera ter contribuído para sua jornada cervejeira e agradece pela colaboração.<br>

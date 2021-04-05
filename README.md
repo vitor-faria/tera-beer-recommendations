@@ -4,6 +4,10 @@ Esse é um projeto desenvolvido ao longo do Bootcamp de Ciência de Dados e Mach
 uma aplicação Python/Streamlit que gera listas de recomendação de cervejas artesanais brasileiras com base no paladar do usuário, e utilizando um sistema 
 de recomendação do tipo `ItemSimilarityRecommender` da biblioteca [Turi Create](https://apple.github.io/turicreate/docs/api/index.html).
 
+Mais detalhes sobre esse projeto podem ser encontrados no 
+[artigo final](https://vitorfaria95.medium.com/terabeer-construindo-um-sistema-de-recomenda%C3%A7%C3%A3o-de-cervejas-artesanais-brasileiras-2a131d66421c).
+
+
 ## Ambiente de desenvolvimento
 
 Para criar o ambiente de desenvolvimento, é recomendado utilizar o [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
@@ -46,6 +50,7 @@ Para executar a aplicação streamlit em servidor local, utilize o comando
 ```
 streamlit run app.py
 ```
+
 
 ## URL da Aplicação
 

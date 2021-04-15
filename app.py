@@ -52,8 +52,8 @@ def display_pesquisa(state):
     st.markdown('''
     ## Olá, que bom que você veio!
     
-    O TeraBeer é um sistema de recomendação de cervejas artesanais brasileiras baseado no seu paladar, 
-    que utiliza Inteligência Artificial.
+    O TeraBeer é um sistema de recomendação de cervejas artesanais brasileiras baseado no seu paladar e no uso 
+    de Inteligência Artificial.
     
     Antes de mais nada, confirme que você tem mais de 18 anos:
     ''')
@@ -68,7 +68,7 @@ def display_pesquisa(state):
         Agora responda as duas perguntas a seguir para gerar as suas recomendações.
         ''')
 
-        options = ['', 'Gosto', 'Não gosto', 'Indiferente', 'Desconheço']
+        options = ['', 'Gosto', 'Indiferente', 'Não gosto', 'Desconheço']
 
         st.markdown('''
             ### QUAL A SUA OPINIÃO SOBRE OS **ALIMENTOS E BEBIDAS** ABAIXO?
